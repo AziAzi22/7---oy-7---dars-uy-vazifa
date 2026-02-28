@@ -90,7 +90,16 @@ export class BotService {
     // admin panel
 
     this.bot.onText(/\/admin/, async (msg) => {
-      if (msg.from?.id !== this.adminId) return;
+      if (msg.from?.id !== this.adminId) {
+        this.bot.sendMessage(msg.chat.id, "You are not admin");
+
+        this.bot.sendPhoto(
+          msg.chat.id,
+          "https://tenor.com/search/gorilla-giving-finger-gifs",
+        );
+
+        return;
+      }
 
       this.bot.sendMessage(msg.chat.id, "Admin panel", {
         reply_markup: {

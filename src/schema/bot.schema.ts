@@ -12,7 +12,7 @@ export class BotUsers {
   chatId: number;
 
   @Prop({ default: 0 })
-  xp: number; 
+  xp: bigint; 
   @Prop({ default: 0 })
   sessionCorrect: number;
 
