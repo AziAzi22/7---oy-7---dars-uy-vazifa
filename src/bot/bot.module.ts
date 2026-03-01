@@ -4,6 +4,7 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { BotUsers, BotUsersSchema } from "src/schema/bot.schema";
 import { BotQuestions, BotQuestionsSchema } from "src/schema/bot.questions";
 import { BotQuestionsCategory, BotQuestionsCategorySchema } from "src/schema/bot.questions.categorys";
+import { BotController } from "./bot.controller";
 
 
 @Module({
@@ -14,6 +15,7 @@ import { BotQuestionsCategory, BotQuestionsCategorySchema } from "src/schema/bot
       { name: BotQuestionsCategory.name, schema: BotQuestionsCategorySchema },
     ]),
   ],
+    controllers: [BotController], 
   providers: [BotService],
 })
 
