@@ -1,4 +1,3 @@
-import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import TelegramBot from "node-telegram-bot-api";
@@ -6,6 +5,7 @@ import { BotQuestions } from "src/schema/bot.questions";
 import { BotQuestionsCategory } from "src/schema/bot.questions.categorys";
 import { BotUsers, BotDocument } from "src/schema/bot.schema";
 import { QuestGenerator } from "src/utils/quest-generator";
+import { Injectable, OnModuleInit } from "@nestjs/common";
 
 interface TestState {
   step: "in_test";
@@ -16,7 +16,7 @@ interface TestState {
 }
 
 @Injectable()
-export class BotService {
+export class BotService implements OnModuleInit {
   private bot: TelegramBot;
 
   private readonly adminId: number = Number(process.env.ADMIN_ID as string);
@@ -25,6 +25,10 @@ export class BotService {
 
   private questGenerator: QuestGenerator;
 
+  async processUpdate(update: any) {
+    await this.bot.processUpdate(update);
+  }
+
   constructor(
     @InjectModel(BotUsers.name) private botUserSchema: Model<BotDocument>,
     @InjectModel(BotQuestions.name) private botQuestSchema: Model<BotQuestions>,
@@ -32,11 +36,15 @@ export class BotService {
     private botQuestCategorySchema: Model<BotQuestionsCategory>,
   ) {
     this.bot = new TelegramBot(process.env.BOT_TOKEN as string, {
-      polling: true,
+      polling: false,
     });
 
     this.questGenerator = new QuestGenerator(this.botQuestSchema);
+  }
 
+  // onModuleInit
+
+  private registerHandlers() {
     // commands
 
     this.bot.setMyCommands([
@@ -95,7 +103,8 @@ export class BotService {
 
         this.bot.sendPhoto(
           msg.chat.id,
-          "https://tenor.com/search/gorilla-giving-finger-gifs",
+          // "https://tenor.com/search/gorilla-giving-finger-gifs",
+          "https://www.coretechnologies.com/blog/images/no-admin.png",
         );
 
         return;
@@ -306,6 +315,10 @@ export class BotService {
       if (state && state.step === "in_test") {
         const currentQuestion = state.questions[state.currentIndex];
 
+        if (!currentQuestion) {
+          this.adminState.delete(chatId);
+          return this.bot.sendMessage(chatId, "Test finished.");
+        }
         const userAnswer = msg.text?.trim().toLowerCase();
         const correctAnswer = currentQuestion.answer.trim().toLowerCase();
 
@@ -446,7 +459,12 @@ export class BotService {
 
     /// -------
   }
-}
 
-("cat_select_");
-("list_questions");
+  async onModuleInit() {
+    await this.bot.setWebHook(
+      "https://seven-oy-7-dars-uy-vazifa.onrender.com/bot",
+    );
+
+    this.registerHandlers();
+  }
+}
